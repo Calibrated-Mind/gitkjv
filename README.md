@@ -1,4 +1,4 @@
-# 🇻🇮 KJV - Sovereign Textual Engineering 🛡️
+## KJV - Sovereign Textual Engineering 🛡️
 
 > The open-source ecosystem that scientifically versions the textual evolution, historical lineage, and foundational jurisprudence of the King James Version. 🌐
 
