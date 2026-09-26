@@ -1,0 +1,11 @@
+name: Blank issue
+description: Create a blank issue for general tasks or notes.
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Context
+      description: Provide details about your request.
+      placeholder: Type here...
+    validations:
+      required: false
