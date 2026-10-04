@@ -1,82 +1,99 @@
-# ######################################################################
-#                                                                      #
-#   GGGG  IIIII  TTTTT  K   K  J   V   V                               #
-#  G        I      T    K  K   J   V   V                               #
-#  G  GG    I      T    KKK    J   V   V                               #
-#  G   G    I      T    K  K   J   V   V                               #
-#   GGG   IIIII    T    K  K  JJ    V                                 #
-#                                                                      #
-# ######################################################################
-#                                                                      #
-#   Topological Recursive Engine - SOVEREIGN ( K.J.V. - E P I C )       #
-#                                                                      #
-#   Sovereign Creator: Jean Laris                                      #
-#   Holding: Alantec - Architects of the Future                        #
-#   Purpose: High-Definition Textual Engineering & Sovereign Version   #
-#   GitHub KJV: https://github.com/Mente-Calibrada/gitkjv              #
-#                                                                      #
-# ######################################################################
-#                                                                      #
-#    # License: GPLv3 - Open Source Sovereignty Artifact               #
-#                                                                      #
-# ######################################################################
+#################################################################################
+#                                                                               #
+#   GGGG IIIII TTTTT K   K J   V   V                                            # 
+#   G      I     T   K  K  J   V   V                                            #
+#   G  GG  I     T   KKK   J   V   V                                            #
+#   G   G  I     T   K K   J   V   V                                            #
+#   GGG  IIIII   T   K  K  JJ    V                                              #
+#                                                                               #
+#################################################################################
+#                                                                               #
+#   Topological Recursive Engine - SOVEREIGN (K.J.V. - E P I C)                 #
+#                                                                               #
+#   Sovereign Creator: Jean Laris                                               #
+#   Holding: Alantec - Architects of the Future                                 #
+#   Purpose: High-Definition Textual Engineering & Sovereign Version            #
+#   GitHub KJV: https://github.com/Mente-Calibrada/gitkjv                       #
+#                                                                               #
+#################################################################################
+#                                                                               #
+#   License: GPLv3 - Open Source Sovereignty Artifact                           #
+#                                                                               #
+#################################################################################
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Dict, List, Optional
+from contextlib import asynccontextmanager
+from typing import List, Optional
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
 
-app = FastAPI(
-    title="GITKJV Topological Recursive Engine",
-    description="Sovereign Textual Engineering & KJV Versioning Infrastructure",
-    version="1.0.0"
-)
+class Settings(BaseSettings):
+    app_name: str = "Sovereign Engine API"
+    database_url: str = "postgresql+asyncpg://user:password@localhost/sovereign_db"
+    debug: bool = False
 
-class TextualRecord(BaseModel):
-    reference: str
-    variant: str
-    historical_note: str
-    anomaly_status: bool
+    class Config:
+        env_file = ".env"
 
-class SovereignEngine:
+settings = Settings()
+
+class VerseModel(BaseModel):
+    id: Optional[int] = Field(None, description="Unique identifier")
+    reference: str = Field(..., description="Text or scripture reference")
+    text: str = Field(..., description="The core content")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Initializing Sovereign Engine runtime...")
+    yield
+    print("Shutting down Sovereign Engine runtime...")
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+class SovereignRepository:
     def __init__(self):
-        self.registry: Dict[str, TextualRecord] = {
-            "Ruth_3:15": TextualRecord(
-                reference="Ruth 3:15",
-                variant="He went / She went",
-                historical_note="1611 He/She typographic anomaly variant registry.",
-                anomaly_status=True
-            ),
-            "Matt_26:36": TextualRecord(
-                reference="Matthew 26:36",
-                variant="Judas / Jesus",
-                historical_note="Early printing structural error documentation.",
-                anomaly_status=True
-            )
-        }
+        self._storage = {}
+        self._counter = 1
 
-    def fetch_anomaly(self, key: str) -> Optional[TextualRecord]:
-        return self.registry.get(key)
+    async def get_all(self) -> List[VerseModel]:
+        return list(self._storage.values())
 
-    def list_all(self) -> List[TextualRecord]:
-        return list(self.registry.values())
+    async def get_by_id(self, record_id: int) -> Optional[VerseModel]:
+        return self._storage.get(record_id)
 
-engine = SovereignEngine()
+    async def create(self, verse: VerseModel) -> VerseModel:
+        verse.id = self._counter
+        self._storage[self._counter] = verse
+        self._counter += 1
+        return verse
 
-@app.get("/", response_model=Dict[str, str])
-async def root() -> Dict[str, str]:
+repository = SovereignRepository()
+
+@app.get("/", response_model=dict)
+async def root():
     return {
-        "engine": "Topological Recursive Engine",
-        "status": "Operational",
-        "holding": "Alantec - Architects of the Future"
+        "status": "operational",
+        "holding": "Alantec - Architects of the Future",
+        "engine": settings.app_name
     }
 
-@app.get("/anomalies/{ref}", response_model=TextualRecord)
-async def get_anomaly(ref: str) -> TextualRecord:
-    record = engine.fetch_anomaly(ref)
+@app.get("/verses", response_model=List[VerseModel])
+async def list_verses():
+    return await repository.get_all()
+
+@app.post("/verses", response_model=VerseModel, status_code=status.HTTP_201_CREATED)
+async def create_verse(verse: VerseModel):
+    return await repository.create(verse)
+
+@app.get("/verses/{verse_id}", response_model=VerseModel)
+async def get_verse(verse_id: int):
+    record = await repository.get_by_id(verse_id)
     if not record:
-        raise HTTPException(status_code=404, detail="Sovereign textual record not found.")
+        raise HTTPException(status_code=404, detail="Record not found")
     return record
 
-@app.get("/anomalies", response_model=List[TextualRecord])
-async def list_anomalies() -> List[TextualRecord]:
-    return engine.list_all()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+# Alantec - Architects of the Future
