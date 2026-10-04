@@ -17,7 +17,7 @@
 #                                                                      #
 # ######################################################################
 #                                                                      #
-#   [ MIT License - Open Source Sovereignty Artifact ]                 #
+#    # License: GPLv3 - Open Source Sovereignty Artifact               #
 #                                                                      #
 # ######################################################################
 
