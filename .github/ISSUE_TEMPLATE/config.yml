@@ -1,2 +1,5 @@
 blank_issues_enabled: false
-contact_links: []
+contact_links:
+  - name: Community Support
+    url: https://github.com/Alantec-Architects-of-the-Future/sovereign-identity-2027/discussions
+    about: Please ask questions and discuss ideas in our GitHub Discussions.
